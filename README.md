@@ -6,7 +6,7 @@
 ### 1. Create conda environment
 
 - python 3.9.19
-Open anaconda prompt
+- Open anaconda prompt
 
 ### 3. Obtain your own Google generative AI API key: 
 - https://aistudio.google.com/app/apikey
