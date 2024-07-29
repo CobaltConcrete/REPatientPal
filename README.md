@@ -9,8 +9,8 @@
 Open anaconda prompt
 
 ### 3. Obtain your own Google generative AI API key: 
-https://aistudio.google.com/app/apikey
-Update your API_KEY in run.py file
+- https://aistudio.google.com/app/apikey
+- Update your API_KEY in run.py file
 
 ### 2. Install requirements
 
