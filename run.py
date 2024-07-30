@@ -2,6 +2,7 @@ import os
 import requests
 import google.generativeai as genai
 import translators as ts
+from gtts import gTTS
 
 API_KEY = "AIzaSyAfBEPXr9mrGbMWbb5YkwigTIH_nv2hQ58"
 
@@ -28,6 +29,25 @@ response_list = response_text.split("\n")
 for line in response_list:
     print(line)
 
+chinese_text = ""
+
 ## Translators as ts
 for line in response_list:
-    print(ts.translate_text(query_text = line, translator = 'bing', from_language = 'en', to_language = 'zh'))
+    translated_line = ts.translate_text(query_text = line, translator = 'bing', from_language = 'en', to_language = 'zh')
+    print(translated_line)
+    cleaned_translated_line = translated_line.replace("*", "")
+    chinese_text += cleaned_translated_line
+    chinese_text += "\n"
+
+
+# Text to be converted to audio
+text = "Hello, this is a text to speech conversion example."
+
+# Language in which you want to convert
+language = "zh-CN"
+
+# Creating an object for gTTS
+speech = gTTS(text=chinese_text, lang=language, slow=False)
+
+# Saving the converted audio in a mp3 file
+speech.save("output2.mp3")
