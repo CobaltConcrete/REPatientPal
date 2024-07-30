@@ -3,7 +3,7 @@ import requests
 import google.generativeai as genai
 import translators as ts
 
-API_KEY = ""
+API_KEY = "AIzaSyAfBEPXr9mrGbMWbb5YkwigTIH_nv2hQ58"
 
 api_url = 'https://api.api-ninjas.com/v1/imagetotext'
 image_file_descriptor = open('Screenshot 2024-07-29 155146.png', 'rb')
@@ -31,16 +31,3 @@ for line in response_list:
 ## Translators as ts
 for line in response_list:
     print(ts.translate_text(query_text = line, translator = 'bing', from_language = 'en', to_language = 'zh'))
-
-
-
-
-## Google Translate mk1
-
-# translate_client = translate.Client()
-
-# result = translate_client.translate(
-#     response_text, target_language='zh-TW')
-
-# print(result['translatedText'])
-
