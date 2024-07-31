@@ -8,9 +8,9 @@ import base64
 API_KEY = "AIzaSyAfBEPXr9mrGbMWbb5YkwigTIH_nv2hQ58"
 
 languages = {
-    "english": ["en", "en"]
-    "chinese": ["zh", "zh"]
-    "cantonese": ["zh-yue", yue]
+    "english": ["en", "en"],
+    "chinese": ["zh", "zh"],
+    "cantonese": ["yue", "zh-yue"]
 }
 
 def image_to_text(image_path):
@@ -41,23 +41,24 @@ def simplify_text(medical_report):
     return response_list
 
 def translate_text(response_list):
-    chinese_text = ""
+    translated_text = ""
 
     ## Translators as ts
     for line in response_list:
-        translated_line = ts.translate_text(query_text = line, translator = 'bing', from_language = 'en', to_language = 'zh-yue')
+        translated_line = ts.translate_text(query_text = line, translator = 'bing', from_language = 'en', to_language = 'zh')
         print(translated_line)
         cleaned_translated_line = translated_line.replace("*", "")
-        chinese_text += cleaned_translated_line
-        chinese_text += "\n"
+        translated_text += cleaned_translated_line
+        translated_text += "\n"
+    html_translated_text = translated_text.replace("\n", "<br>")
     
-    return chinese_text
+    return html_translated_text
 
 def text_to_speech(chinese_text):
     audio_file_path = "C:\Save Data Here\Coding stuff\Projects\REPatientPal\outputwebsite.mp3"
 
     # Language in which you want to convert
-    language = "yue"
+    language = "zh"
 
     # Creating an object for gTTS
     speech = gTTS(text=chinese_text, lang=language)
@@ -75,8 +76,8 @@ def text_to_speech(chinese_text):
 def main(image_path):
     medical_report = image_to_text(image_path)
     response_list = simplify_text(medical_report)
-    translated_text = translate_text(response_list)
-    audio_base64 = text_to_speech(translated_text)
-    return translated_text, audio_base64
+    html_translated_text = translate_text(response_list)
+    audio_base64 = text_to_speech(html_translated_text)
+    return html_translated_text, audio_base64
 
 # main()
