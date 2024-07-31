@@ -7,6 +7,12 @@ import base64
 
 API_KEY = "AIzaSyAfBEPXr9mrGbMWbb5YkwigTIH_nv2hQ58"
 
+languages = {
+    "english": ["en", "en"]
+    "chinese": ["zh", "zh"]
+    "cantonese": ["zh-yue", yue]
+}
+
 def image_to_text(image_path):
     api_url = 'https://api.api-ninjas.com/v1/imagetotext'
     image_file_descriptor = open(image_path, 'rb')
@@ -39,7 +45,7 @@ def translate_text(response_list):
 
     ## Translators as ts
     for line in response_list:
-        translated_line = ts.translate_text(query_text = line, translator = 'bing', from_language = 'en', to_language = 'yue')
+        translated_line = ts.translate_text(query_text = line, translator = 'bing', from_language = 'en', to_language = 'zh-yue')
         print(translated_line)
         cleaned_translated_line = translated_line.replace("*", "")
         chinese_text += cleaned_translated_line
@@ -48,16 +54,16 @@ def translate_text(response_list):
     return chinese_text
 
 def text_to_speech(chinese_text):
-    audio_file_path = "C:\Save Data Here\Coding stuff\Projects\REPatientPal\output.mp3"
+    audio_file_path = "C:\Save Data Here\Coding stuff\Projects\REPatientPal\outputwebsite.mp3"
 
     # Language in which you want to convert
-    language = "zh-yue"
+    language = "yue"
 
     # Creating an object for gTTS
-    # speech = gTTS(text=chinese_text, lang=language)
+    speech = gTTS(text=chinese_text, lang=language)
 
     # Saving the converted audio in a mp3 file
-    # speech.save(audio_file_path)
+    speech.save(audio_file_path)
     # Encode the audio file to Base64
     with open(audio_file_path, 'rb') as audio_file:
         audio_base64 = base64.b64encode(audio_file.read()).decode('utf-8')

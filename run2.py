@@ -52,10 +52,11 @@ translated_text = """
 """
 
 # Language in which you want to convert
-language = "zh-yue"
+language = "yue"
 
 # Creating an object for gTTS
 speech = gTTS(text=translated_text, lang=language)
 
 # Saving the converted audio in a mp3 file
 speech.save("cantonese.mp3")
+
