@@ -1,10 +1,3 @@
-import os
-import requests
-import google.generativeai as genai
-import translators as ts
-from gtts import gTTS
-
-translated_text = """
 ## John Doe嘅簡化醫療報告
 
 **患者信息：**
@@ -49,13 +42,3 @@ translated_text = """
 * **2型 糖尿病：** 身體不能正確使用胰島素的情況。
 
 **註：**這是醫療報告的簡化摘要。 它唔包括所有詳細信息。 最好諮詢醫療保健專業人員以進行完整和準確嘅醫療評估。
-"""
-
-# Language in which you want to convert
-language = "zh-yue"
-
-# Creating an object for gTTS
-speech = gTTS(text=translated_text, lang=language)
-
-# Saving the converted audio in a mp3 file
-speech.save("cantonese.mp3")

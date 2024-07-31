@@ -4,6 +4,7 @@ import google.generativeai as genai
 import translators as ts
 from gtts import gTTS
 
+
 API_KEY = "AIzaSyAfBEPXr9mrGbMWbb5YkwigTIH_nv2hQ58"
 
 api_url = 'https://api.api-ninjas.com/v1/imagetotext'
