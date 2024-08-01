@@ -28,7 +28,7 @@ def simplify_text(medical_report):
     # Choose a model that's appropriate for your use case.
     model = genai.GenerativeModel('gemini-1.5-flash')
 
-    prompt = f"Simplify this medical report for me, highlighting the important medical jargon. {medical_report}"
+    prompt = f"Simplify this medical report for me, highlighting the important medical terminology. {medical_report}"
 
     response = model.generate_content(prompt)
 
@@ -50,9 +50,12 @@ def translate_text(response_list):
         cleaned_translated_line = translated_line.replace("*", "")
         translated_text += cleaned_translated_line
         translated_text += "\n"
+
     html_translated_text = translated_text.replace("\n", "<br>")
+    combined_text = "English: \n" + response_list + "\n Translated: \n" + html_translated_text
+    html_combined_text = combined_text.replace("\n", "<br>")
     
-    return html_translated_text
+    return html_translated_text, html_combined_text
 
 def text_to_speech(chinese_text):
     audio_file_path = "C:\Save Data Here\Coding stuff\Projects\REPatientPal\outputwebsite.mp3"
@@ -79,8 +82,8 @@ def text_to_speech(chinese_text):
 def main(image_path):
     medical_report = image_to_text(image_path)
     response_list = simplify_text(medical_report)
-    html_translated_text = translate_text(response_list)
+    html_translated_text, html_combined_text = translate_text(response_list)
     audio_base64 = text_to_speech(html_translated_text)
-    return html_translated_text, audio_base64
+    return html_combined_text, audio_base64
 
 # main()
