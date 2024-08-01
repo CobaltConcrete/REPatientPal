@@ -28,7 +28,11 @@ def simplify_text(medical_report):
     # Choose a model that's appropriate for your use case.
     model = genai.GenerativeModel('gemini-1.5-flash')
 
-    prompt = f"Simplify this medical report for me, highlighting the important medical terminology. {medical_report}"
+    prompt = f"""
+    Assume that you are a very knowledgable and professional medical doctor. You are explaining a medical report for the elderly who do not understand difficult medical terminology. Simplify this medical report for me, highlighting the important medical terminology. 
+    Do not ask for a response or offer clarification.
+    Medical Report: {medical_report}
+    """
 
     response = model.generate_content(prompt)
 
