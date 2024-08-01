@@ -10,7 +10,8 @@ API_KEY = "AIzaSyAfBEPXr9mrGbMWbb5YkwigTIH_nv2hQ58"
 languages = {
     "english": ["en", "en"],
     "chinese": ["zh", "zh"],
-    "cantonese": ["yue", "zh-yue"]
+    "cantonese": ["yue", "zh-yue"],
+    "hindi": ["hi", "hi"]
 }
 
 def image_to_text(image_path):
@@ -29,7 +30,7 @@ def simplify_text(medical_report):
     model = genai.GenerativeModel('gemini-1.5-flash')
 
     prompt = f"""
-    Assume that you are a very knowledgable and professional medical doctor. You are explaining a medical report for the elderly who do not understand difficult medical terminology. Simplify this medical report for me, highlighting the important medical terminology. 
+    Assume that you are a very knowledgable and professional medical doctor. You are simplifying a medical report for the elderly who do not understand difficult medical terminology. Simplify this medical report for me, highlighting the important medical terminology. 
     Do not ask for a response or offer clarification.
     Medical Report: {medical_report}
     """
@@ -46,13 +47,13 @@ def simplify_text(medical_report):
 
     return response_text, response_list
 
-def translate_text(response_text, response_list):
+def translate_text(response_text, response_list, lang_code_0):
     translated_text = ""
     non_formatted_translated_text = ""
 
     ## Translators as ts
     for line in response_list:
-        translated_line = ts.translate_text(query_text = line, translator = 'bing', from_language = 'en', to_language = 'zh')
+        translated_line = ts.translate_text(query_text = line, translator = 'bing', from_language = 'en', to_language = lang_code_0)
         print(translated_line)
         cleaned_translated_line = translated_line.replace("*", "")
         translated_text += cleaned_translated_line
@@ -72,11 +73,11 @@ def translate_text(response_text, response_list):
 
     return html_translated_text, html_combined_text
 
-def text_to_speech(chinese_text):
+def text_to_speech(chinese_text, lang_code_1):
     audio_file_path = "C:\Save Data Here\Coding stuff\Projects\REPatientPal\outputwebsite.mp3"
 
     # Language in which you want to convert
-    language = "zh"
+    language = lang_code_1
 
     # Remove the HTML separators
     chinese_text = chinese_text.replace("<br>", "")
@@ -94,11 +95,11 @@ def text_to_speech(chinese_text):
 
     return audio_base64
 
-def main(image_path):
+def main(image_path, language):
     medical_report = image_to_text(image_path)
     response_text, response_list = simplify_text(medical_report)
-    html_translated_text, html_combined_text = translate_text(response_text, response_list)
-    audio_base64 = text_to_speech(html_translated_text)
+    html_translated_text, html_combined_text = translate_text(response_text, response_list, languages[language][0])
+    audio_base64 = text_to_speech(html_translated_text, languages[language][1])
     return html_combined_text, audio_base64
 
 # main()

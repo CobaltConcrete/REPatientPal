@@ -17,10 +17,12 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+    if 'file' not in request.files or 'language' not in request.form:
+        return jsonify({"error": "File or language selection missing"}), 400
 
     file = request.files['file']
+    language = request.form['language']  # Get selected language
+
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
 
@@ -28,18 +30,8 @@ def upload_file():
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
 
-    # Process the image
-    # medical_report = image_to_text(filepath)
-    # response_list = simplify_text(medical_report)
-    # translated_text = translate_text(response_list)
-    # speech = text_to_speech(translated_text)
-
-    # Save the audio file
-    audio_file_path = 'C:\Save Data Here\Coding stuff\Projects\REPatientPal\output.mp3'
-    # speech.save(audio_file_path)
-
-    translated_text, audio_base64 = main(filepath)
-    # print(audio_base64)
+    # Call main function with selected language
+    translated_text, audio_base64 = main(filepath, language)
 
     return jsonify({
         "text": translated_text,

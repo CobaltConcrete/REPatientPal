@@ -6,9 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Upload and Text-to-Speech</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            background: url("https://static.vecteezy.com/system/resources/previews/005/338/140/non_2x/medical-outline-seamless-pattern-with-pill-syringe-heart-prescription-illustration-on-green-background-vector.jpg") repeat;
+            /* Set the background image to repeat */
+            background-size: cover;
+            /* Optional: adjust the size to cover the viewport */
+            background-size: 500px
+        }
+
+        button {
+            text-align: center;
         }
 
         h1 {
@@ -17,7 +31,15 @@
 
         .container {
             max-width: 600px;
-            margin: 0 auto;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.8);
+            /* Optional: add a semi-transparent background for better text visibility */
+            padding: 20px;
+            border-radius: 8px;
         }
 
         input[type="file"] {
@@ -37,14 +59,55 @@
             display: block;
             margin-top: 20px;
         }
+
+        .btn {
+            width: 50%;
+            margin: 20px 0;
+            color: #fff;
+            background: #1FB264;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            border-bottom: 4px solid #15824B;
+            transition: all .2s ease;
+            outline: none;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn:hover {
+            background: #1AA059;
+            color: #ffffff;
+            transition: all .2s ease;
+            cursor: pointer;
+        }
+
+        .btn:active {
+            border: 0;
+            transition: all .2s ease;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Upload an Image</h1>
-        <input type="file" id="fileInput" />
-        <button onclick="uploadFile()">Upload</button>
+        <h1>NightingAIe</h1>
+        <p>Simplify and translate your documents!</p>
+        <input class="btn" type="file" id="fileInput" />
+
+        <!-- Language selection dropdown -->
+        <select id="languageSelect" class="btn">
+            <option value="english">English</option>
+            <option value="chinese">Chinese</option>
+            <option value="cantonese">Cantonese</option>
+            <option value="hindi">Hindi</option>
+            <!-- Add more languages as needed -->
+        </select>
+
+        <button class="btn" type="button" onclick="uploadFile()">Upload</button>
         <div id="output">
             <div id="text-output"></div>
             <audio id="audio-player" controls></audio>
@@ -55,6 +118,7 @@
         function uploadFile() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
+            const language = document.getElementById('languageSelect').value;  // Get selected language
             if (!file) {
                 alert("Please select a file.");
                 return;
@@ -62,6 +126,7 @@
 
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('language', language);  // Append language to form data
 
             fetch('/upload', {
                 method: 'POST',
