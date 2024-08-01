@@ -60,6 +60,9 @@ def text_to_speech(chinese_text):
     # Language in which you want to convert
     language = "zh"
 
+    # Remove the HTML separators
+    chinese_text = chinese_text.replace("<br>", "")
+
     # Creating an object for gTTS
     speech = gTTS(text=chinese_text, lang=language)
 
