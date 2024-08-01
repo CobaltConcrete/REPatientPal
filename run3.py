@@ -33,6 +33,8 @@ def simplify_text(medical_report):
     response = model.generate_content(prompt)
 
     response_text = response.text
+    response_text = response_text.replace("#", "")
+
     response_list = response_text.split("\n")
 
     for line in response_list:
@@ -42,6 +44,7 @@ def simplify_text(medical_report):
 
 def translate_text(response_text, response_list):
     translated_text = ""
+    non_formatted_translated_text = ""
 
     ## Translators as ts
     for line in response_list:
@@ -50,11 +53,19 @@ def translate_text(response_text, response_list):
         cleaned_translated_line = translated_line.replace("*", "")
         translated_text += cleaned_translated_line
         translated_text += "\n"
+        non_formatted_translated_text += translated_line
+        non_formatted_translated_text += "\n"
 
     html_translated_text = translated_text.replace("\n", "<br>")
     combined_text = "English: \n" + response_text + "\n Translated: \n" + html_translated_text
-    html_combined_text = combined_text.replace("\n", "<br>")
-    
+
+    non_formatted_combined_text = "English: \n" + response_text + "\n Translated: \n" + non_formatted_translated_text
+    html_combined_text = non_formatted_combined_text.replace("\n", "<br>")
+    html_combined_text = html_combined_text.replace("\n\n", "</p><p>").replace("English:", "<h1>English:</h1>").replace("Translated:", "<h1>Translated:</h1>")
+    text_length = len(html_combined_text)
+    for i in range(text_length):
+        html_combined_text = html_combined_text.replace("**", "<strong>", 1).replace("**", "</strong>", 1)
+
     return html_translated_text, html_combined_text
 
 def text_to_speech(chinese_text):
@@ -75,7 +86,7 @@ def text_to_speech(chinese_text):
     with open(audio_file_path, 'rb') as audio_file:
         audio_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
 
-    print(f"AUDIO: {audio_base64}")
+    # print(f"AUDIO: {audio_base64}")
 
     return audio_base64
 

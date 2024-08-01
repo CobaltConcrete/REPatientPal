@@ -39,7 +39,7 @@ def upload_file():
     # speech.save(audio_file_path)
 
     translated_text, audio_base64 = main(filepath)
-    print(audio_base64)
+    # print(audio_base64)
 
     return jsonify({
         "text": translated_text,
