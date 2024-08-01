@@ -38,9 +38,9 @@ def simplify_text(medical_report):
     for line in response_list:
         print(line)
 
-    return response_list
+    return response_text, response_list
 
-def translate_text(response_list):
+def translate_text(response_text, response_list):
     translated_text = ""
 
     ## Translators as ts
@@ -52,7 +52,7 @@ def translate_text(response_list):
         translated_text += "\n"
 
     html_translated_text = translated_text.replace("\n", "<br>")
-    combined_text = "English: \n" + response_list + "\n Translated: \n" + html_translated_text
+    combined_text = "English: \n" + response_text + "\n Translated: \n" + html_translated_text
     html_combined_text = combined_text.replace("\n", "<br>")
     
     return html_translated_text, html_combined_text
@@ -81,8 +81,8 @@ def text_to_speech(chinese_text):
 
 def main(image_path):
     medical_report = image_to_text(image_path)
-    response_list = simplify_text(medical_report)
-    html_translated_text, html_combined_text = translate_text(response_list)
+    response_text, response_list = simplify_text(medical_report)
+    html_translated_text, html_combined_text = translate_text(response_text, response_list)
     audio_base64 = text_to_speech(html_translated_text)
     return html_combined_text, audio_base64
 
