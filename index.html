@@ -74,8 +74,8 @@
                         return;
                     }
 
-                    // Display text
-                    document.getElementById('text-output').textContent = data.text;
+                    // Display text with HTML content
+                    document.getElementById('text-output').innerHTML = data.text;
 
                     // Create audio player
                     const audioPlayer = document.getElementById('audio-player');
