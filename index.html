@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and Text-to-Speech</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 20px 0;
+        }
+
+        #output {
+            margin-top: 20px;
+        }
+
+        #text-output {
+            margin-bottom: 20px;
+        }
+
+        #audio-player {
+            display: block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Upload an Image</h1>
+        <input type="file" id="fileInput" />
+        <button onclick="uploadFile()">Upload</button>
+        <div id="output">
+            <div id="text-output"></div>
+            <audio id="audio-player" controls></audio>
+        </div>
+    </div>
+
+    <script>
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please select a file.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    // Display text with HTML content
+                    document.getElementById('text-output').innerHTML = data.text;
+
+                    // Create audio player
+                    const audioPlayer = document.getElementById('audio-player');
+                    audioPlayer.src = 'data:audio/mp3;base64,' + data.audiobase64;
+                    audioPlayer.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("An error occurred. Please try again.");
+                });
+        }
+    </script>
+</body>
+
+</html>
