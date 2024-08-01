@@ -5,46 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Upload and Text-to-Speech</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        input[type="file"] {
-            display: block;
-            margin: 20px 0;
-        }
-
-        #output {
-            margin-top: 20px;
-        }
-
-        #text-output {
-            margin-bottom: 20px;
-        }
-
-        #audio-player {
-            display: block;
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div class="container">
-        <h1>Upload an Image</h1>
-        <input type="file" id="fileInput" />
-        <button onclick="uploadFile()">Upload</button>
+        <h1>NightingAIe</h1>
+        <p>[Insert Instructions]</p>
+        <input class="btn" type="file" id="fileInput" />
+        <button class="btn" type="button" onclick="uploadFile()">Upload</button>
         <div id="output">
             <div id="text-output"></div>
             <audio id="audio-player" controls></audio>
