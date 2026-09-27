@@ -9,11 +9,12 @@ Use Python 3.12. Create and activate a virtual environment, install dependencies
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
+Set-Location backend
 python -m pip install -r requirements.txt
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
-Open `.env` and set `GEMINI_API_KEY` to a new key from [Google AI Studio](https://aistudio.google.com/app/apikey). Start the API:
+Open `backend/.env` and set `GEMINI_API_KEY` to a new key from [Google AI Studio](https://aistudio.google.com/app/apikey). Start the API from the `backend` folder:
 
 ```powershell
 uvicorn app:app --reload
@@ -31,9 +32,16 @@ Open <http://127.0.0.1:8000/docs> for interactive API documentation. The endpoin
 | `LOG_LEVEL` | No | Python log level; defaults to `INFO`. |
 | `FRONTEND_ORIGIN` | No | Comma-separated website origins allowed to call the API from a browser. Set this to the Render Static Site URL. |
 
+## Project folders
+
+- `frontend/` — the public React website.
+- `backend/` — the FastAPI API and document-processing code.
+- `mobile-app/` — the optional Expo mobile app.
+- `docs/` — setup instructions, including the Render guide.
+
 The same Gemini credential is used for image understanding, summarization, and translation. gTTS creates speech without a key. There is no speech-to-text feature or translation-provider key in this version.
 
-The optional Expo mobile app in `PatientPal/` reads `EXPO_PUBLIC_API_URL` from `PatientPal/.env`; copy its example file and set the deployed server URL. It returns text results only. The Create React App website in `frontend/` can be deployed as a Render Static Site; set `REACT_APP_API_URL` to the deployed API endpoint ending in `/upload`. The API must allow the Static Site's address through `FRONTEND_ORIGIN`.
+The optional Expo mobile app in `mobile-app/` reads `EXPO_PUBLIC_API_URL` from `mobile-app/.env`; copy its example file and set the deployed server URL. It returns text results only. The Create React App website in `frontend/` can be deployed as a Render Static Site; set `REACT_APP_API_URL` to the deployed API endpoint ending in `/upload`. The API must allow the Static Site's address through `FRONTEND_ORIGIN`.
 
 ## Privacy and storage
 

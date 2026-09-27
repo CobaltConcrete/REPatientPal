@@ -6,6 +6,8 @@ This guide is written for someone setting up a website for the first time. Follo
 
 > **Already created the Render Web Service?** This project now uses FastAPI with Uvicorn. In that service, open **Settings**, find **Build & Deploy**, and change **Start Command** to `uvicorn app:app --host 0.0.0.0 --port $PORT`. Save the change, then deploy the latest commit. Otherwise, Render will keep trying the old Gunicorn command.
 
+> **The API files now live in `backend/`.** In the existing Web Service settings, change **Root Directory** from blank to `backend`. Keep the build command `pip install -r requirements.txt` and the Uvicorn start command above.
+
 > **Already created the Static Site?** Its folder has been renamed to `frontend`. Open that Static Site's **Settings → Build & Deploy**, change **Root Directory** to `frontend`, and save so Render builds from the renamed folder.
 
 ## What you need
@@ -47,7 +49,7 @@ Enter these values. If a field listed here does not appear, leave it alone and c
 | **Region** | The nearest region available | Where Render runs the app. |
 | **Branch** | `main` | The GitHub version Render should use. |
 | **Language** | **Python 3** | The language the app runs on. |
-| **Root Directory** | Leave empty | The project files Render needs are already at the top of the repository. |
+| **Root Directory** | `backend` | This folder contains `app.py` and `requirements.txt`. |
 | **Build Command** | `pip install -r requirements.txt` | Installs the parts the app needs to run, including FastAPI and Uvicorn. Copy exactly. |
 | **Start Command** | `uvicorn app:app --host 0.0.0.0 --port $PORT` | Starts the API. Copy the whole line exactly. |
 | **Instance Type** or **Plan** | **Free** | Enough for a personal demo. It may take a short time to start after being idle. |
@@ -71,7 +73,7 @@ On the setup form, find **Environment Variables**. These are private settings th
 | `MAX_UPLOAD_MB` | `8` |
 | `LOG_LEVEL` | `INFO` *(optional)* |
 
-Keep the key in Render's environment settings. Do not put it in GitHub, this guide, your source code, or `render.yaml`. On your own computer, the key belongs in the ignored `.env` file, written like `GEMINI_API_KEY=paste-your-new-key-here`.
+Keep the key in Render's environment settings. Do not put it in GitHub, this guide, your source code, or `render.yaml`. On your own computer, the key belongs in `backend/.env`, written like `GEMINI_API_KEY=paste-your-new-key-here`.
 
 ## 5. Create and open the API service
 
