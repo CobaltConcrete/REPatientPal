@@ -88,7 +88,13 @@ The Static Site publishes the React website for people to use. In Render, choose
 | **Build Command** | `npm ci && npm run build` |
 | **Publish Directory** | `build` |
 
-Under **Environment Variables**, add `REACT_APP_API_URL` and set its value to the backend address ending in `/upload`, for example `https://YOUR-SERVICE.onrender.com/upload`. Replace `YOUR-SERVICE` with the Web Service name. Never add the Gemini key to the Static Site.
+Under **Environment Variables**, add this row:
+
+| Key | Value |
+|---|---|
+| `REACT_APP_API_URL` | `https://YOUR-SERVICE.onrender.com/upload` (replace `YOUR-SERVICE` with your Web Service name) |
+
+Keep the Gemini key on the Backend Web Service. Never add it to the Static Site.
 
 Create the Static Site and wait for it to say live. Its `onrender.com` address is the website address to share with users. Copy that exact address into `FRONTEND_ORIGIN` on the Backend Web Service, save, and redeploy the backend. If the website cannot reach the API, check that `REACT_APP_API_URL` ends in `/upload` and `FRONTEND_ORIGIN` exactly matches the Static Site address.
 
