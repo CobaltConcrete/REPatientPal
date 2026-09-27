@@ -118,7 +118,8 @@ def _medlineplus_drug(term, language_code):
 
 
 def _medlineplus_topic(term):
-    params = {"db": "healthTopics", "term": f'title:"{term}"', "rettype": "brief", "retmax": "5"}
+    # Search broadly, then require an exact MedlinePlus title or synonym match below.
+    params = {"db": "healthTopics", "term": term, "rettype": "brief", "retmax": "10"}
     url = "https://wsearch.nlm.nih.gov/ws/query?" + urllib.parse.urlencode(params)
     try:
         root = ET.fromstring(_fetch(url))
@@ -143,7 +144,9 @@ def _medlineplus_topic(term):
         if selected is None:
             return None
         document, fields = selected
-        definition = next(iter(fields.get("snippet", [])), "") or next(iter(fields.get("full-summary", [])), "")
+        definition = (next(iter(fields.get("snippet", [])), "")
+                      or next(iter(fields.get("FullSummary", [])), "")
+                      or next(iter(fields.get("full-summary", [])), ""))
         if not definition:
             return None
         return {

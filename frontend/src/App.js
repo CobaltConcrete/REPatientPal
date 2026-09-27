@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 
 const API_URL = process.env.REACT_APP_API_URL || '/upload';
@@ -38,6 +38,8 @@ function App() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [glossary, setGlossary] = useState(null);
+  const glossaryCache = useRef(new Map());
+  const glossaryRequests = useRef(new Map());
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -66,18 +68,54 @@ function App() {
     }
   }
 
-  async function openGlossary(term, glossaryLanguage) {
+  const loadGlossary = useCallback((term, glossaryLanguage) => {
+    const key = `${glossaryLanguage}:${term.trim().toLocaleLowerCase()}`;
+    if (glossaryCache.current.has(key)) return Promise.resolve(glossaryCache.current.get(key));
+    if (glossaryRequests.current.has(key)) return glossaryRequests.current.get(key);
+
+    const url = `${GLOSSARY_URL}?term=${encodeURIComponent(term)}&language=${encodeURIComponent(glossaryLanguage)}`;
+    const request = fetch(url)
+      .then(async (response) => {
+        const data = await response.json();
+        if (response.status === 404) {
+          const missing = { term, error: data.error || data.detail || 'No trusted definition was found for this term.' };
+          glossaryCache.current.set(key, missing);
+          return missing;
+        }
+        if (!response.ok) throw new Error(data.error || data.detail || 'The glossary is temporarily unavailable.');
+        glossaryCache.current.set(key, data);
+        return data;
+      })
+      .finally(() => glossaryRequests.current.delete(key));
+    glossaryRequests.current.set(key, request);
+    return request;
+  }, []);
+
+  const openGlossary = useCallback(async (term, glossaryLanguage) => {
     setGlossary({ term, loading: true });
     try {
-      const url = `${GLOSSARY_URL}?term=${encodeURIComponent(term)}&language=${encodeURIComponent(glossaryLanguage)}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'No trusted definition was found for this term.');
-      setGlossary({ ...data, loading: false });
+      setGlossary({ ...(await loadGlossary(term, glossaryLanguage)), loading: false });
     } catch (lookupError) {
       setGlossary({ term, error: lookupError.message || 'The glossary is temporarily unavailable.', loading: false });
     }
-  }
+  }, [loadGlossary]);
+
+  useEffect(() => {
+    const terms = result?.report?.glossary_terms || [];
+    if (!terms.length) return undefined;
+    const languages = language === 'english' ? ['english'] : ['english', language];
+    const queue = terms.flatMap((term) => languages.map((itemLanguage) => [term, itemLanguage]));
+    let next = 0;
+    let cancelled = false;
+    const worker = async () => {
+      while (!cancelled && next < queue.length) {
+        const [term, itemLanguage] = queue[next++];
+        try { await loadGlossary(term, itemLanguage); } catch (_) { /* retry on user click */ }
+      }
+    };
+    Promise.all(Array.from({ length: Math.min(3, queue.length) }, worker));
+    return () => { cancelled = true; };
+  }, [result, language, loadGlossary]);
 
   return (
     <main className="App">
@@ -102,7 +140,7 @@ function App() {
             <option value="english">English</option><option value="chinese">简体中文</option><option value="cantonese">廣東話</option><option value="hindi">हिन्दी</option>
           </select>
           <button className="primary-button" disabled={loading}>{loading ? 'Working on it…' : 'Make it clearer'} <span aria-hidden="true">→</span></button>
-          <p className="privacy">This app does not save your image. Google Gemini processes it; gTTS receives translated text for audio. Medical terms you open are looked up in U.S. National Library of Medicine sources.</p>
+          <p className="privacy">This app does not save your image. Google Gemini processes it; gTTS receives translated text for audio. Recognized medical terms are checked against U.S. National Library of Medicine sources, and definitions are translated by Gemini when needed.</p>
         </form>
         <section className="panel output" aria-live="polite" aria-busy={loading}>
           <p className="eyebrow">02 · YOUR RESULTS</p>
