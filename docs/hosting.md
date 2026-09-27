@@ -40,14 +40,14 @@ In Render, choose **New + → Web Service**, connect `CobaltConcrete/REPatientPa
 | **Language / Runtime** | **Python 3** |
 | **Root Directory** | `backend` |
 | **Build Command** | `pip install -r requirements.txt` |
-| **Start Command** | `uvicorn app:app --host 0.0.0.0 --port $PORT` |
+| **Start Command** | `python serve.py` |
 | **Health Check Path** | `/health` |
 | **Plan / Instance Type** | **Free** for a demo |
 | **Dockerfile Path** | Leave empty; this service uses Python, not Docker. |
 
 Leave **Pre-Deploy Command** and **Publish Directory** empty. The build and start commands run from `backend/`, so use the commands above without adding `backend/` to their paths.
 
-If the Web Service already exists, open **Settings → Build & Deploy** and set **Root Directory** to `backend`. Update the Start Command to the Uvicorn command above; the old service setting may still say Gunicorn. Save the changes and deploy the latest commit.
+If the Web Service already exists, open **Settings > Build & Deploy** and set **Root Directory** to `backend`. Set **Start Command** to `python serve.py`; the old service setting may still contain the Uvicorn command. Save the changes and deploy the latest commit.
 
 Add these settings under **Environment → Environment Variables**:
 
@@ -62,19 +62,19 @@ After the Static Site is created, add one more variable here: `FRONTEND_ORIGIN` 
 
 When Render says the service is live, open `https://YOUR-SERVICE.onrender.com/health`. The response should be `{"status":"ok"}`. The interactive API documentation is at `/docs`.
 
-### If the log says `uvicorn: command not found`
+### If the log says the port is invalid or Uvicorn cannot start
 
-The pip upgrade notice is informational. In the log you shared, an invisible character appears immediately before `uvicorn` (and after `$PORT`). Render may be trying to run a command whose name includes that hidden character.
+The pip upgrade notice is informational. The log you shared shows an invisible character after `$PORT`, so Uvicorn receives `10000` plus that character and rejects the port. The `backend/serve.py` launcher reads Render's port setting inside Python, avoiding `$PORT` in the Render command.
 
-1. Open the Web Service **Settings → Build & Deploy**.
-2. Click **Edit** beside **Start Command**, delete all the text in the box, then type this command directly into the box. Avoid copying the command from a formatted message:
+1. Open the Web Service **Settings > Build & Deploy**.
+2. Click **Edit** beside **Start Command**, clear the whole field, then type this command:
 
-   `uvicorn app:app --host 0.0.0.0 --port $PORT`
+   `python serve.py`
 
 3. Confirm **Root Directory** is `backend` and **Build Command** is `pip install -r requirements.txt`.
-4. Save the changes, then choose **Manual Deploy → Deploy latest commit**.
+4. Save the changes, then choose **Manual Deploy > Deploy latest commit**.
 
-The backend's `requirements.txt` includes Uvicorn. If a cleanly typed command still isn't found, check that the build log installs the requirements from `backend/requirements.txt` successfully.
+The backend's `requirements.txt` includes Uvicorn. If it still cannot start, check that the build log installs the requirements from `backend/requirements.txt` successfully.
 
 ## Frontend Static Site
 
