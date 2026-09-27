@@ -48,15 +48,16 @@ Enter these values. If a field listed here does not appear, leave it alone and c
 | **Name** | `patientpal` | The name of the service. If Render says it is taken, try `patientpal-` followed by a few numbers. |
 | **Region** | The nearest region available | Where Render runs the app. |
 | **Branch** | `main` | The GitHub version Render should use. |
-| **Language** | **Python 3** | The language the app runs on. |
+| **Language / Runtime** | **Python 3** | This is a Python service; do not choose Docker. |
 | **Root Directory** | `backend` | This folder contains `app.py` and `requirements.txt`. |
 | **Build Command** | `pip install -r requirements.txt` | Installs the parts the app needs to run, including FastAPI and Uvicorn. Copy exactly. |
 | **Start Command** | `uvicorn app:app --host 0.0.0.0 --port $PORT` | Starts the API. Copy the whole line exactly. |
 | **Instance Type** or **Plan** | **Free** | Enough for a personal demo. It may take a short time to start after being idle. |
 
-If these extra fields appear, leave them empty:
+For the backend Web Service, leave **Dockerfile Path** empty. This project does not use Docker; Render installs Python packages from `backend/requirements.txt`.
 
-- **Dockerfile Path**: leave blank. This project does not use Docker.
+If these other fields appear, leave them empty:
+
 - **Pre-Deploy Command**: leave blank. There is no database to prepare.
 - **Publish Directory**: leave blank. This is for a different kind of website.
 
