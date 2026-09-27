@@ -1,154 +1,115 @@
-﻿# Put PatientPal online with Render
+# Set up PatientPal
 
-This guide is written for someone setting up a website for the first time. Follow the steps in order. You will put the app on GitHub, ask Render to run it, then open the web address Render gives you.
+This guide explains how to put the web version online with GitHub and Render. The project is split into three app folders:
 
-> **Before you start:** The old Gemini key was exposed in the repository. Revoke it and create a new one before publishing. This is a demo; do not upload real patient records.
+- `backend/` — the FastAPI service that processes uploads.
+- `frontend/` — the React website that people open in a browser.
+- `mobile-app/` — an optional Expo mobile app prototype.
 
-> **Already created the Render Web Service?** This project now uses FastAPI with Uvicorn. In that service, open **Settings**, find **Build & Deploy**, and change **Start Command** to `uvicorn app:app --host 0.0.0.0 --port $PORT`. Save the change, then deploy the latest commit. Otherwise, Render will keep trying the old Gunicorn command.
+The web version uses two Render services: a **Web Service** for the backend and a **Static Site** for the frontend. Do not upload real patient records; this is a demo.
 
-> **The API files now live in `backend/`.** In the existing Web Service settings, change **Root Directory** from blank to `backend`. Keep the build command `pip install -r requirements.txt` and the Uvicorn start command above.
+> **Key safety:** An older Gemini key was exposed in the repository. Revoke it and create a replacement before deploying. Keep the new key only in the backend's Render environment settings or in your ignored local `backend/.env` file.
 
-> **Already created the Static Site?** Its folder has been renamed to `frontend`. Open that Static Site's **Settings → Build & Deploy**, change **Root Directory** to `frontend`, and save so Render builds from the renamed folder.
+## GitHub
 
-## What you need
+Render downloads the code from GitHub, so the changes must be pushed before Render can use them.
 
-- A GitHub account with access to `CobaltConcrete/REPatientPal`.
-- A Render account.
-- A new Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-- The project saved on your computer, with its latest changes uploaded to GitHub.
+If you use GitHub Desktop:
 
-## 1. Upload the app files to GitHub
+1. Open GitHub Desktop and choose the `REPatientPal` project.
+2. Review the changed files. Do not commit `.env` files; they contain private settings. Files ending in `.env.example` are safe to commit because they contain placeholders.
+3. Enter a short note in the **Summary** box, such as `Prepare PatientPal for Render`.
+4. Click **Commit to main**, then **Push origin**.
 
-Render gets the app from GitHub. If you use GitHub Desktop:
+If Render cannot find the private repository:
 
-1. Open GitHub Desktop and select the `REPatientPal` project.
-2. Look through the list of changed files. Do not commit `.env`; it holds private settings for your computer.
-3. In the **Summary** box at the lower left, type `Prepare PatientPal for Render`.
-4. Click **Commit to main**.
-5. Click **Push origin** near the top. This uploads your changes to GitHub. Render can only build files that have been pushed.
+1. In Render, choose GitHub when connecting a repository.
+2. On GitHub's access page, choose **Only select repositories**, select `CobaltConcrete/REPatientPal`, then choose **Save** or **Install & Authorize**.
+3. If it is not listed, ask the repository owner or administrator to grant Render access. A non-owner may not have permission to change access to a private repository.
 
-If the latest project is already on GitHub, you can skip this step.
+## Backend Web Service
 
-## 2. Start creating the website on Render
+The Web Service runs the Python API. If you already created it, update its settings as shown below before deploying the latest commit.
 
-1. Go to [dashboard.render.com](https://dashboard.render.com/) and sign in.
-2. Click **New +** (or **New**) and select **Web Service**.
-3. If Render asks where your code is, choose **GitHub** and sign in to GitHub.
-4. If GitHub asks which repositories Render can access, choose **Only select repositories**, select `CobaltConcrete/REPatientPal`, then click **Save** or **Install & Authorize**. This gives Render access to that private repository. If you see an **All repositories** option instead, you can choose it, but that gives Render access to all your repositories.
-5. Return to Render. Find `CobaltConcrete/REPatientPal` in the repository list and click **Connect**. If it is missing, refresh the list. If it is still missing, open GitHub **Settings**, then **Applications**, then **Installed GitHub Apps**, choose **Render**, click **Configure**, and add `CobaltConcrete/REPatientPal` to the repository access list.
+In Render, choose **New + → Web Service**, connect `CobaltConcrete/REPatientPal`, and enter:
 
-Choose **Web Service** for the Python API. You will make the separate public-facing website in Step 7.
-
-## 3. Fill in the setup form
-
-Enter these values. If a field listed here does not appear, leave it alone and continue.
-
-| On the form | Enter or choose | In plain language |
-|---|---|---|
-| **Name** | `patientpal` | The name of the service. If Render says it is taken, try `patientpal-` followed by a few numbers. |
-| **Region** | The nearest region available | Where Render runs the app. |
-| **Branch** | `main` | The GitHub version Render should use. |
-| **Language / Runtime** | **Python 3** | This is a Python service; do not choose Docker. |
-| **Root Directory** | `backend` | This folder contains `app.py` and `requirements.txt`. |
-| **Build Command** | `pip install -r requirements.txt` | Installs the parts the app needs to run, including FastAPI and Uvicorn. Copy exactly. |
-| **Start Command** | `uvicorn app:app --host 0.0.0.0 --port $PORT` | Starts the API. Copy the whole line exactly. |
-| **Instance Type** or **Plan** | **Free** | Enough for a personal demo. It may take a short time to start after being idle. |
-
-For the backend Web Service, leave **Dockerfile Path** empty. This project does not use Docker; Render installs Python packages from `backend/requirements.txt`.
-
-If these other fields appear, leave them empty:
-
-- **Pre-Deploy Command**: leave blank. There is no database to prepare.
-- **Publish Directory**: leave blank. This is for a different kind of website.
-
-The Web Service runs the FastAPI API. The separate `frontend` folder contains the React website; you will publish it as a Static Site in Step 7.
-
-## 4. Add the new Gemini key
-
-On the setup form, find **Environment Variables**. These are private settings that Render gives to the app when it runs. Add each row using **Add Environment Variable** or the equivalent button:
-
-| Name / Key | Value |
+| Setting | Enter this |
 |---|---|
-| `GEMINI_API_KEY` | Paste your **new** key from [Google AI Studio](https://aistudio.google.com/app/apikey). If there is a **Secret** switch, turn it on. |
+| **Name** | `patientpal` (or another available name) |
+| **Branch** | `main` |
+| **Language / Runtime** | **Python 3** |
+| **Root Directory** | `backend` |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `uvicorn app:app --host 0.0.0.0 --port $PORT` |
+| **Health Check Path** | `/health` |
+| **Plan / Instance Type** | **Free** for a demo |
+| **Dockerfile Path** | Leave empty; this service uses Python, not Docker. |
+
+Leave **Pre-Deploy Command** and **Publish Directory** empty. The build and start commands run from `backend/`, so use the commands above without adding `backend/` to their paths.
+
+If the Web Service already exists, open **Settings → Build & Deploy** and set **Root Directory** to `backend`. Update the Start Command to the Uvicorn command above; the old service setting may still say Gunicorn. Save the changes and deploy the latest commit.
+
+Add these settings under **Environment → Environment Variables**:
+
+| Key | Value |
+|---|---|
+| `GEMINI_API_KEY` | Your new key from [Google AI Studio](https://aistudio.google.com/app/apikey). Keep it secret. |
 | `GEMINI_MODEL` | `gemini-3.8-flash` |
 | `MAX_UPLOAD_MB` | `8` |
-| `LOG_LEVEL` | `INFO` *(optional)* |
+| `LOG_LEVEL` | `INFO` (optional) |
 
-Keep the key in Render's environment settings. Do not put it in GitHub, this guide, your source code, or `render.yaml`. On your own computer, the key belongs in `backend/.env`, written like `GEMINI_API_KEY=paste-your-new-key-here`.
+After the Static Site is created, add one more variable here: `FRONTEND_ORIGIN` = the full Static Site address, such as `https://patientpal-frontend.onrender.com`. Leave off any path and trailing slash. Save and redeploy the Web Service after setting it.
 
-## 5. Create and open the API service
+When Render says the service is live, open `https://YOUR-SERVICE.onrender.com/health`. The response should be `{"status":"ok"}`. The interactive API documentation is at `/docs`.
 
-1. Review the settings and make sure the new Gemini key is entered.
-2. Click **Create Web Service** or **Deploy Web Service**.
-3. Render will show a page with activity and logs while it sets up the app. Wait until it says the service is live. The first setup can take several minutes.
-4. Click the web address ending in `onrender.com` near the top of the page. This is the API address. Copy it somewhere; you will need it for the frontend.
+### If the log says `uvicorn: command not found`
 
-Render explains [Web Service setup](https://render.com/docs/your-first-deploy). FastAPI's official guide explains [running the app with Uvicorn](https://fastapi.tiangolo.com/deployment/manually/).
+The pip upgrade notice is informational. In the log you shared, an invisible character appears immediately before `uvicorn` (and after `$PORT`). Render may be trying to run a command whose name includes that hidden character.
 
-## 6. Check the API service
+1. Open the Web Service **Settings → Build & Deploy**.
+2. Click **Edit** beside **Start Command**, delete all the text in the box, then type this command directly into the box. Avoid copying the command from a formatted message:
 
-1. Open the API address followed by `/health`, for example `https://patientpal.onrender.com/health`. You should see `{"status":"ok"}`. Your address may have a different name.
-2. If it does not work, open **Logs** on the Render service page. Check that the key is entered correctly and that the latest app files were pushed to GitHub.
+   `uvicorn app:app --host 0.0.0.0 --port $PORT`
 
-### If the log still says `gunicorn: command not found`
+3. Confirm **Root Directory** is `backend` and **Build Command** is `pip install -r requirements.txt`.
+4. Save the changes, then choose **Manual Deploy → Deploy latest commit**.
 
-The pip update notice is harmless. This app now uses Uvicorn, so Render must use the new start command. Open the Web Service's **Settings**, find **Build & Deploy**, edit **Start Command** to `uvicorn app:app --host 0.0.0.0 --port $PORT`, and save. Confirm **Build Command** is `pip install -r requirements.txt`, then choose **Manual Deploy → Deploy latest commit**. The latest GitHub version must include the updated `requirements.txt`.
+The backend's `requirements.txt` includes Uvicorn. If a cleanly typed command still isn't found, check that the build log installs the requirements from `backend/requirements.txt` successfully.
 
-## 7. Create the public website as a Static Site
+## Frontend Static Site
 
-The Static Site is the page your visitors will open. It sends image uploads to the Web Service API from Step 5. Both services use the same GitHub repository, but different folders and settings.
+The Static Site publishes the React website for people to use. In Render, choose **New + → Static Site**, connect the same GitHub repository, then set:
 
-1. In the Render dashboard, click **New +** and choose **Static Site**.
-2. Select the same GitHub repository, `CobaltConcrete/REPatientPal`. If it is not listed, ask the repository owner or administrator to grant Render access to it.
-3. Choose branch **`main`**, then fill in the form:
+| Setting | Enter this |
+|---|---|
+| **Name** | `patientpal-frontend` (or another available name) |
+| **Branch** | `main` |
+| **Root Directory** | `frontend` |
+| **Build Command** | `npm ci && npm run build` |
+| **Publish Directory** | `build` |
 
-| On the form | Enter this | Why |
-|---|---|---|
-| **Name** | `patientpal-frontend` (or another available name) | This becomes part of the website address. |
-| **Root Directory** | `frontend` | The React website files are in this folder. |
-| **Build Command** | `npm ci && npm run build` | Installs the website packages and prepares the finished website. |
-| **Publish Directory** | `build` | This is the folder made by the build command. |
+Under **Environment Variables**, add `REACT_APP_API_URL` and set its value to the backend address ending in `/upload`, for example `https://YOUR-SERVICE.onrender.com/upload`. Replace `YOUR-SERVICE` with the Web Service name. Never add the Gemini key to the Static Site.
 
-4. Find **Environment Variables** and add this row. Use the API address copied in Step 5, with `/upload` at the end:
+Create the Static Site and wait for it to say live. Its `onrender.com` address is the website address to share with users. Copy that exact address into `FRONTEND_ORIGIN` on the Backend Web Service, save, and redeploy the backend. If the website cannot reach the API, check that `REACT_APP_API_URL` ends in `/upload` and `FRONTEND_ORIGIN` exactly matches the Static Site address.
 
-   | Key | Value |
-   |---|---|
-   | `REACT_APP_API_URL` | `https://your-api-name.onrender.com/upload` |
+If you already created a Static Site before the folder was renamed, open **Settings → Build & Deploy** and change **Root Directory** to `frontend`.
 
-   Replace `your-api-name` with the real Web Service address. Do not add the Gemini key to the Static Site; the key belongs only on the private API service.
+## Mobile App
 
-5. Choose the **Free** plan if Render offers it, then click **Create Static Site**.
-6. Wait for the site to say it is live. Copy its address ending in `onrender.com`; this is the address you give to users.
+**Status: a prototype exists, but the mobile app is not ready to publish.** The code in `mobile-app/` has an Expo project and a basic screen that can select a photo, choose a language, send it to the API, and display the summary and translation. It does not play the generated audio. It has not been verified as a complete iOS or Android app, built for app stores, or published.
 
-## 8. Connect the website to the API
+The Render Web Service can also receive requests from the mobile app, but the app needs the deployed API address in `mobile-app/.env`:
 
-The API only accepts browser requests from the website address you allow. Add that address to the API service:
+```text
+EXPO_PUBLIC_API_URL=https://YOUR-SERVICE.onrender.com
+```
 
-1. Open the **Web Service** in Render and click **Environment**.
-2. Click **Add Environment Variable**.
-3. Set the key to `FRONTEND_ORIGIN` and the value to the full Static Site address, such as `https://patientpal-frontend.onrender.com`. Do not add a path or a final slash.
-4. Click **Save, rebuild, and deploy** (or the equivalent save-and-deploy option).
-5. When the API is live again, open the Static Site address and try a sample image with no real patient information.
+This is only the API address; do not add `/upload` because the app adds that path itself. A working web deployment does not automatically publish the mobile app. Before distributing it, the Expo/native image-picker setup needs to be validated on real devices, audio behavior decided, and iOS/Android builds prepared.
 
-If you later change the Static Site name or add a custom domain, update `FRONTEND_ORIGIN` on the API service to match the new address, then redeploy the API.
+## Storage and privacy
 
-If the page loads but cannot reach the API, confirm that `REACT_APP_API_URL` on the Static Site is the API's `/upload` address, and that `FRONTEND_ORIGIN` on the Web Service exactly matches the Static Site address. Save and redeploy both after changing their settings.
+This version has no accounts or saved history, so it does not need a database. It processes an upload and returns results without saving the image, text, translation, or audio in its own storage. Do not add a database just to deploy this version.
 
-## Do I need to set up a database?
+The uploaded image is sent to Google Gemini to read and explain it. The translated text is sent to gTTS to create audio. Tell users about this processing before they upload anything. Do not use this demo for diagnoses, treatment decisions, or real patient records.
 
-No. This version does not have accounts or saved history. It handles an upload, returns the result, and does not save the image, text, translation, or audio. You do not need Postgres, Supabase, or another database to put this version online.
-
-If you later add accounts or saved preferences, a database may be useful. Supabase Postgres is one option for ordinary account settings. Do not save identifiable medical documents in a free database or file bucket. Keeping health records requires careful privacy and security planning, including rules for who can access and delete them.
-
-## What happens when someone uses the demo?
-
-- The uploaded image is sent to **Google Gemini** to read, explain, and translate it.
-- The translated text is sent to **gTTS** to make spoken audio.
-- This app does not save the upload or the generated result.
-
-Tell people what happens to their upload before they use the app. This demo is not for diagnosis or treatment decisions.
-
-## What is running on Render?
-
-There are two services. The **Static Site** shows the React website that visitors use. The **Web Service** receives uploads, asks Gemini to process them, and uses gTTS to create audio. FastAPI also provides interactive API docs at `/docs`. The Gemini key stays on the Web Service and is never put in the website. The API service settings are also recorded in [`render.yaml`](../render.yaml); you do not need to open that file for the steps above.
-
+The backend's Render settings are also recorded in [`render.yaml`](../render.yaml). Render's [monorepo guide](https://render.com/docs/monorepo-support) explains how service root directories work; FastAPI's [Uvicorn guide](https://fastapi.tiangolo.com/deployment/manually/) explains the server command.
