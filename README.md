@@ -13,13 +13,13 @@ python -m pip install -r requirements.txt
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
-Open `.env` and set `GEMINI_API_KEY` to a new key from [Google AI Studio](https://aistudio.google.com/app/apikey). Start the app:
+Open `.env` and set `GEMINI_API_KEY` to a new key from [Google AI Studio](https://aistudio.google.com/app/apikey). Start the API:
 
 ```powershell
-python app.py
+uvicorn app:app --reload
 ```
 
-Open <http://127.0.0.1:5000>. The endpoint accepts multipart form data at `POST /upload` with `file` and `language` fields (`english`, `chinese`, `cantonese`, or `hindi`). `GET /health` is the deployment health check.
+Open <http://127.0.0.1:8000/docs> for interactive API documentation. The endpoint accepts multipart form data at `POST /upload` with `file` and `language` fields (`english`, `chinese`, `cantonese`, or `hindi`). `GET /health` is the deployment health check.
 
 ## Environment variables
 
@@ -28,13 +28,12 @@ Open <http://127.0.0.1:5000>. The endpoint accepts multipart form data at `POST 
 | `GEMINI_API_KEY` | Yes | Server-side Gemini API credential. Never put it in browser code or commit `.env`. |
 | `GEMINI_MODEL` | No | Gemini model ID; defaults to `gemini-3.8-flash`. |
 | `MAX_UPLOAD_MB` | No | Upload limit; defaults to 8 MB. |
-| `FLASK_DEBUG` | No | Local debugging only; keep `false` in deployment. |
 | `LOG_LEVEL` | No | Python log level; defaults to `INFO`. |
 | `FRONTEND_ORIGIN` | No | Comma-separated website origins allowed to call the API from a browser. Set this to the Render Static Site URL. |
 
 The same Gemini credential is used for image understanding, summarization, and translation. gTTS creates speech without a key. There is no speech-to-text feature or translation-provider key in this version.
 
-The optional Expo client in `PatientPal/` reads `EXPO_PUBLIC_API_URL` from `PatientPal/.env`; copy its example file and set the deployed server URL. It returns text results only. The Create React App client in `image-to-audio/` is the public website and can be deployed as a Render Static Site; set `REACT_APP_API_URL` to the deployed Flask endpoint ending in `/upload`. The API must allow the Static Site's address through `FRONTEND_ORIGIN`.
+The optional Expo client in `PatientPal/` reads `EXPO_PUBLIC_API_URL` from `PatientPal/.env`; copy its example file and set the deployed server URL. It returns text results only. The Create React App client in `image-to-audio/` is the public website and can be deployed as a Render Static Site; set `REACT_APP_API_URL` to the deployed API endpoint ending in `/upload`. The API must allow the Static Site's address through `FRONTEND_ORIGIN`.
 
 ## Privacy and storage
 

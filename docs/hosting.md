@@ -4,6 +4,8 @@ This guide is written for someone setting up a website for the first time. Follo
 
 > **Before you start:** The old Gemini key was exposed in the repository. Revoke it and create a new one before publishing. This is a demo; do not upload real patient records.
 
+> **Already created the Render Web Service?** This project now uses FastAPI with Uvicorn. In that service, open **Settings**, find **Build & Deploy**, and change **Start Command** to `uvicorn app:app --host 0.0.0.0 --port $PORT`. Save the change, then deploy the latest commit. Otherwise, Render will keep trying the old Gunicorn command.
+
 ## What you need
 
 - A GitHub account with access to `CobaltConcrete/REPatientPal`.
@@ -44,8 +46,8 @@ Enter these values. If a field listed here does not appear, leave it alone and c
 | **Branch** | `main` | The GitHub version Render should use. |
 | **Language** | **Python 3** | The language the app runs on. |
 | **Root Directory** | Leave empty | The project files Render needs are already at the top of the repository. |
-| **Build Command** | `pip install -r requirements.txt` | Installs the parts the app needs to run, including Gunicorn. Copy exactly. |
-| **Start Command** | `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120` | Starts the app. Copy the whole line exactly. |
+| **Build Command** | `pip install -r requirements.txt` | Installs the parts the app needs to run, including FastAPI and Uvicorn. Copy exactly. |
+| **Start Command** | `uvicorn app:app --host 0.0.0.0 --port $PORT` | Starts the API. Copy the whole line exactly. |
 | **Instance Type** or **Plan** | **Free** | Enough for a personal demo. It may take a short time to start after being idle. |
 
 If these extra fields appear, leave them empty:
@@ -54,7 +56,7 @@ If these extra fields appear, leave them empty:
 - **Pre-Deploy Command**: leave blank. There is no database to prepare.
 - **Publish Directory**: leave blank. This is for a different kind of website.
 
-The Web Service runs the Python API. The separate `image-to-audio` folder contains the React website; you will publish it as a Static Site in Step 7.
+The Web Service runs the FastAPI API. The separate `image-to-audio` folder contains the React website; you will publish it as a Static Site in Step 7.
 
 ## 4. Add the new Gemini key
 
@@ -65,7 +67,6 @@ On the setup form, find **Environment Variables**. These are private settings th
 | `GEMINI_API_KEY` | Paste your **new** key from [Google AI Studio](https://aistudio.google.com/app/apikey). If there is a **Secret** switch, turn it on. |
 | `GEMINI_MODEL` | `gemini-3.8-flash` |
 | `MAX_UPLOAD_MB` | `8` |
-| `FLASK_DEBUG` | `false` |
 | `LOG_LEVEL` | `INFO` *(optional)* |
 
 Keep the key in Render's environment settings. Do not put it in GitHub, this guide, your source code, or `render.yaml`. On your own computer, the key belongs in the ignored `.env` file, written like `GEMINI_API_KEY=paste-your-new-key-here`.
@@ -77,16 +78,16 @@ Keep the key in Render's environment settings. Do not put it in GitHub, this gui
 3. Render will show a page with activity and logs while it sets up the app. Wait until it says the service is live. The first setup can take several minutes.
 4. Click the web address ending in `onrender.com` near the top of the page. This is the API address. Copy it somewhere; you will need it for the frontend.
 
-Render has official instructions for [creating a Web Service](https://render.com/docs/your-first-deploy) and [running a Flask app](https://render.com/docs/deploy-flask).
+Render explains [Web Service setup](https://render.com/docs/your-first-deploy). FastAPI's official guide explains [running the app with Uvicorn](https://fastapi.tiangolo.com/deployment/manually/).
 
 ## 6. Check the API service
 
 1. Open the API address followed by `/health`, for example `https://patientpal.onrender.com/health`. You should see `{"status":"ok"}`. Your address may have a different name.
 2. If it does not work, open **Logs** on the Render service page. Check that the key is entered correctly and that the latest app files were pushed to GitHub.
 
-### If the log says `gunicorn: command not found`
+### If the log still says `gunicorn: command not found`
 
-The pip update notice is harmless. The actual problem is that Render built a GitHub version whose `requirements.txt` does not include Gunicorn. Push the updated app files, including `requirements.txt`, to the `main` branch. Then open the Web Service in Render, click **Manual Deploy**, and choose **Deploy latest commit**. The build command must be `pip install -r requirements.txt` and the start command must begin with `gunicorn app:app`.
+The pip update notice is harmless. This app now uses Uvicorn, so Render must use the new start command. Open the Web Service's **Settings**, find **Build & Deploy**, edit **Start Command** to `uvicorn app:app --host 0.0.0.0 --port $PORT`, and save. Confirm **Build Command** is `pip install -r requirements.txt`, then choose **Manual Deploy → Deploy latest commit**. The latest GitHub version must include the updated `requirements.txt`.
 
 ## 7. Create the public website as a Static Site
 
@@ -144,5 +145,5 @@ Tell people what happens to their upload before they use the app. This demo is n
 
 ## What is running on Render?
 
-There are two services. The **Static Site** shows the React website that visitors use. The **Web Service** receives uploads, asks Gemini to process them, and uses gTTS to create audio. The Gemini key stays on the Web Service and is never put in the website. The API service settings are also recorded in [`render.yaml`](../render.yaml); you do not need to open that file for the steps above.
+There are two services. The **Static Site** shows the React website that visitors use. The **Web Service** receives uploads, asks Gemini to process them, and uses gTTS to create audio. FastAPI also provides interactive API docs at `/docs`. The Gemini key stays on the Web Service and is never put in the website. The API service settings are also recorded in [`render.yaml`](../render.yaml); you do not need to open that file for the steps above.
 
