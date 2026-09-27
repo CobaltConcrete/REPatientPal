@@ -17,6 +17,7 @@ MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 allowed_frontend_origins = [
     origin.strip().rstrip("/")
     for origin in (
+        "https://nightingaie.onrender.com,"
         "https://nightingaie-frontend.onrender.com,"
         + os.getenv("FRONTEND_ORIGIN", "")
     ).split(",")
