@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: patientpal
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: MAX_UPLOAD_MB
+        value: "8"
+      - key: FLASK_DEBUG
+        value: "false"
+      - key: FRONTEND_ORIGIN
+        sync: false

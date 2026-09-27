@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+node_modules/
+build/
+dist/
+.env
+.env.*
+!.env.example
+
+# Generated uploads and audio
+uploads/*
+*.mp3
+
+# Local/editor files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

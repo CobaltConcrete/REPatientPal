@@ -11,7 +11,7 @@ This guide is written for someone setting up a website for the first time. Follo
 - A new Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 - The project saved on your computer, with its latest changes uploaded to GitHub.
 
-## 1. Upload your latest project to GitHub
+## 1. Upload the app files to GitHub
 
 Render gets the app from GitHub. If you use GitHub Desktop:
 
@@ -19,7 +19,7 @@ Render gets the app from GitHub. If you use GitHub Desktop:
 2. Look through the list of changed files. Do not commit `.env`; it holds private settings for your computer.
 3. In the **Summary** box at the lower left, type `Prepare PatientPal for Render`.
 4. Click **Commit to main**.
-5. Click **Push origin** near the top. This uploads your changes to GitHub.
+5. Click **Push origin** near the top. This uploads your changes to GitHub. Render can only build files that have been pushed.
 
 If the latest project is already on GitHub, you can skip this step.
 
@@ -31,7 +31,7 @@ If the latest project is already on GitHub, you can skip this step.
 4. If GitHub asks which repositories Render can access, choose **Only select repositories**, select `CobaltConcrete/REPatientPal`, then click **Save** or **Install & Authorize**. This gives Render access to that private repository. If you see an **All repositories** option instead, you can choose it, but that gives Render access to all your repositories.
 5. Return to Render. Find `CobaltConcrete/REPatientPal` in the repository list and click **Connect**. If it is missing, refresh the list. If it is still missing, open GitHub **Settings**, then **Applications**, then **Installed GitHub Apps**, choose **Render**, click **Configure**, and add `CobaltConcrete/REPatientPal` to the repository access list.
 
-Choose **Web Service**. You do not need to find or select **Blueprint**, **Static Site**, **Postgres**, or **Docker** for this setup.
+Choose **Web Service** for the Python API. You will make the separate public-facing website in Step 7.
 
 ## 3. Fill in the setup form
 
@@ -44,7 +44,7 @@ Enter these values. If a field listed here does not appear, leave it alone and c
 | **Branch** | `main` | The GitHub version Render should use. |
 | **Language** | **Python 3** | The language the app runs on. |
 | **Root Directory** | Leave empty | The project files Render needs are already at the top of the repository. |
-| **Build Command** | `pip install -r requirements.txt` | Installs the parts the app needs to run. Copy exactly. |
+| **Build Command** | `pip install -r requirements.txt` | Installs the parts the app needs to run, including Gunicorn. Copy exactly. |
 | **Start Command** | `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120` | Starts the app. Copy the whole line exactly. |
 | **Instance Type** or **Plan** | **Free** | Enough for a personal demo. It may take a short time to start after being idle. |
 
@@ -54,7 +54,7 @@ If these extra fields appear, leave them empty:
 - **Pre-Deploy Command**: leave blank. There is no database to prepare.
 - **Publish Directory**: leave blank. This is for a different kind of website.
 
-There is no separate frontend command to enter. The main app serves the web page too. The `image-to-audio` folder is an optional development tool, not a second website to set up.
+The Web Service runs the Python API. The separate `image-to-audio` folder contains the React website; you will publish it as a Static Site in Step 7.
 
 ## 4. Add the new Gemini key
 
@@ -70,21 +70,63 @@ On the setup form, find **Environment Variables**. These are private settings th
 
 Keep the key in Render's environment settings. Do not put it in GitHub, this guide, your source code, or `render.yaml`. On your own computer, the key belongs in the ignored `.env` file, written like `GEMINI_API_KEY=paste-your-new-key-here`.
 
-## 5. Create and open the website
+## 5. Create and open the API service
 
 1. Review the settings and make sure the new Gemini key is entered.
 2. Click **Create Web Service** or **Deploy Web Service**.
 3. Render will show a page with activity and logs while it sets up the app. Wait until it says the service is live. The first setup can take several minutes.
-4. Click the web address ending in `onrender.com` near the top of the page. That is your website.
+4. Click the web address ending in `onrender.com` near the top of the page. This is the API address. Copy it somewhere; you will need it for the frontend.
 
 Render has official instructions for [creating a Web Service](https://render.com/docs/your-first-deploy) and [running a Flask app](https://render.com/docs/deploy-flask).
 
-## 6. Make sure it works
+## 6. Check the API service
 
-1. Open the `onrender.com` web address. You should see PatientPal's upload page.
-2. To check the app's status, add `/health` to the end of the address. For example: `https://patientpal.onrender.com/health`. You should see `{"status":"ok"}`. Your address may have a different name.
-3. Try the upload page with a sample image that has no real patient information.
-4. If the page does not work, open **Logs** on the Render service page. Check that the key was entered correctly and that the latest project was pushed to GitHub.
+1. Open the API address followed by `/health`, for example `https://patientpal.onrender.com/health`. You should see `{"status":"ok"}`. Your address may have a different name.
+2. If it does not work, open **Logs** on the Render service page. Check that the key is entered correctly and that the latest app files were pushed to GitHub.
+
+### If the log says `gunicorn: command not found`
+
+The pip update notice is harmless. The actual problem is that Render built a GitHub version whose `requirements.txt` does not include Gunicorn. Push the updated app files, including `requirements.txt`, to the `main` branch. Then open the Web Service in Render, click **Manual Deploy**, and choose **Deploy latest commit**. The build command must be `pip install -r requirements.txt` and the start command must begin with `gunicorn app:app`.
+
+## 7. Create the public website as a Static Site
+
+The Static Site is the page your visitors will open. It sends image uploads to the Web Service API from Step 5. Both services use the same GitHub repository, but different folders and settings.
+
+1. In the Render dashboard, click **New +** and choose **Static Site**.
+2. Select the same GitHub repository, `CobaltConcrete/REPatientPal`. If it is not listed, ask the repository owner or administrator to grant Render access to it.
+3. Choose branch **`main`**, then fill in the form:
+
+| On the form | Enter this | Why |
+|---|---|---|
+| **Name** | `patientpal-frontend` (or another available name) | This becomes part of the website address. |
+| **Root Directory** | `image-to-audio` | The React website files are in this folder. |
+| **Build Command** | `npm ci && npm run build` | Installs the website packages and prepares the finished website. |
+| **Publish Directory** | `build` | This is the folder made by the build command. |
+
+4. Find **Environment Variables** and add this row. Use the API address copied in Step 5, with `/upload` at the end:
+
+   | Key | Value |
+   |---|---|
+   | `REACT_APP_API_URL` | `https://your-api-name.onrender.com/upload` |
+
+   Replace `your-api-name` with the real Web Service address. Do not add the Gemini key to the Static Site; the key belongs only on the private API service.
+
+5. Choose the **Free** plan if Render offers it, then click **Create Static Site**.
+6. Wait for the site to say it is live. Copy its address ending in `onrender.com`; this is the address you give to users.
+
+## 8. Connect the website to the API
+
+The API only accepts browser requests from the website address you allow. Add that address to the API service:
+
+1. Open the **Web Service** in Render and click **Environment**.
+2. Click **Add Environment Variable**.
+3. Set the key to `FRONTEND_ORIGIN` and the value to the full Static Site address, such as `https://patientpal-frontend.onrender.com`. Do not add a path or a final slash.
+4. Click **Save, rebuild, and deploy** (or the equivalent save-and-deploy option).
+5. When the API is live again, open the Static Site address and try a sample image with no real patient information.
+
+If you later change the Static Site name or add a custom domain, update `FRONTEND_ORIGIN` on the API service to match the new address, then redeploy the API.
+
+If the page loads but cannot reach the API, confirm that `REACT_APP_API_URL` on the Static Site is the API's `/upload` address, and that `FRONTEND_ORIGIN` on the Web Service exactly matches the Static Site address. Save and redeploy both after changing their settings.
 
 ## Do I need to set up a database?
 
@@ -102,5 +144,5 @@ Tell people what happens to their upload before they use the app. This demo is n
 
 ## What is running on Render?
 
-One Render Web Service runs the app, shows the web page, accepts uploads, asks Gemini to process them, and uses gTTS to create audio. The Render setup is also recorded in [`render.yaml`](../render.yaml); you do not need to open that file for the steps above.
+There are two services. The **Static Site** shows the React website that visitors use. The **Web Service** receives uploads, asks Gemini to process them, and uses gTTS to create audio. The Gemini key stays on the Web Service and is never put in the website. The API service settings are also recorded in [`render.yaml`](../render.yaml); you do not need to open that file for the steps above.
 

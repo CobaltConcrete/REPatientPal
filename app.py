@@ -1,46 +1,76 @@
-from flask import Flask, request, jsonify, send_file, send_from_directory
-from werkzeug.utils import secure_filename
+import base64
+import logging
 import os
-from flask_cors import CORS  # Import CORS
-from run3 import image_to_text, simplify_text, translate_text, text_to_speech, main  # Import your functions
 
+from flask import Flask, jsonify, render_template, request
+from werkzeug.exceptions import RequestEntityTooLarge
+
+from run3 import ProcessingError, main
+
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+app.config["MAX_CONTENT_LENGTH"] = int(os.getenv("MAX_UPLOAD_MB", "8")) * 1024 * 1024
+allowed_frontend_origins = {
+    origin.strip().rstrip("/")
+    for origin in os.getenv("FRONTEND_ORIGIN", "").split(",")
+    if origin.strip()
+}
 
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/')
+@app.after_request
+def add_frontend_cors_headers(response):
+    origin = request.headers.get("Origin", "").rstrip("/")
+    if origin and origin in allowed_frontend_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers.add("Vary", "Origin")
+    return response
+
+
+@app.get("/")
 def index():
-    return send_from_directory('.', 'index.html')
+    return render_template("index.html")
 
-@app.route('/upload', methods=['POST'])
+
+@app.get("/health")
+def health():
+    return jsonify({"status": "ok"})
+
+
+@app.post("/upload")
 def upload_file():
-    if 'file' not in request.files or 'language' not in request.form:
-        return jsonify({"error": "File or language selection missing"}), 400
+    image = request.files.get("file")
+    language = request.form.get("language", "")
+    if image is None:
+        return jsonify(error="Choose an image to upload."), 400
+    if not image.filename:
+        return jsonify(error="Choose an image to upload."), 400
+    if not language:
+        return jsonify(error="Choose a language."), 400
 
-    file = request.files['file']
-    language = request.form['language']  # Get selected language
+    try:
+        report, audio_bytes = main(image.read(), language)
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    except ProcessingError as exc:
+        logging.exception("Document processing failed")
+        return jsonify(error=str(exc)), 502
+    except Exception:
+        logging.exception("Unexpected document processing error")
+        return jsonify(error="Something went wrong while processing the document. Please try again."), 500
 
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+    return jsonify(
+        report=report,
+        audio_base64=base64.b64encode(audio_bytes).decode("ascii") if audio_bytes else None,
+        audio_mime_type="audio/mpeg" if audio_bytes else None,
+    )
 
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(filepath)
 
-    # Call main function with selected language
-    translated_text, audio_base64 = main(filepath, language)
+@app.errorhandler(RequestEntityTooLarge)
+def too_large(_error):
+    return jsonify(error=f"Image is too large. Maximum size is {app.config['MAX_CONTENT_LENGTH'] // (1024 * 1024)} MB."), 413
 
-    return jsonify({
-        "text": translated_text,
-        "audiobase64": audio_base64
-    })
 
-@app.route('/audio/<filename>', methods=['GET'])
-def get_audio(filename):
-    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), as_attachment=True)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=os.getenv("FLASK_DEBUG", "false").lower() == "true")
