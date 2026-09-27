@@ -8,6 +8,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from glossary import lookup_glossary
 from run3 import ProcessingError, main
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -50,6 +51,22 @@ def index():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/glossary")
+def glossary(term: str, language: str = "english"):
+    try:
+        return lookup_glossary(term, language)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logging.exception("Medical glossary lookup failed")
+        raise HTTPException(
+            status_code=502,
+            detail="The medical glossary is temporarily unavailable.",
+        ) from exc
 
 
 @app.post("/upload")

@@ -1,6 +1,6 @@
 # NightingAIe
 
-NightingAIe is a small web prototype that reads a photo of a medical document, creates a plain-language summary, translates it, and generates speech. It is a language-accessibility demo, not a diagnostic or clinical tool.
+NightingAIe is a small web prototype that reads a photo of a medical document, creates a plain-language summary, translates it, and generates speech. The web interface preserves section, paragraph, and list formatting, and lets users open source-backed explanations for recognized medical terms. It is a language-accessibility demo, not a diagnostic or clinical tool.
 
 ## Run locally
 
@@ -45,7 +45,7 @@ The optional Expo mobile app in `mobile-app/` reads `EXPO_PUBLIC_API_URL` from `
 
 ## Privacy and storage
 
-This app does not save uploaded images, reports, translations, or generated audio to its own filesystem or a database. The image is sent to Google Gemini for processing; translated text is sent to gTTS to create audio. Configure those providers and obtain appropriate consent before using real health documents. Do not use this prototype for clinical decisions or store identifiable health information without a security, privacy, and regulatory review.
+This app does not save uploaded images, reports, translations, or generated audio to its own filesystem or a database. The image is sent to Google Gemini for processing; translated text is sent to gTTS to create audio. When a user opens a glossary term, the term is looked up using U.S. National Library of Medicine sources (MedlinePlus, RxNorm, MeSH, and DailyMed); non-English definitions are translated by Gemini. Configure those providers and obtain appropriate consent before using real health documents. Do not use this prototype for clinical decisions or store identifiable health information without a security, privacy, and regulatory review.
 
 ## Deployment
 

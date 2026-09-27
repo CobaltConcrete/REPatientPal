@@ -54,28 +54,97 @@ def _generate_report(image_bytes, mime_type, language_name):
 
     client = genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=90_000))
     prompt = (
-        "Read the visible text in this medical document. Return a faithful transcription, "
-        "a short plain-language summary, and a translation of that summary into "
-        f"{language_name}. Preserve names, dates, numbers, medication names, and uncertainty. "
-        "Do not diagnose, add facts, or recommend treatment. If text is unreadable, say so. "
-        "This is language assistance, not medical advice. Return only JSON with string keys "
-        "source_text, summary, and translation."
+        "Read the visible text in this medical document. Return a faithful transcription "
+        "and a plain-language summary in structured blocks, then translate those same "
+        f"blocks into {language_name}. Preserve the input's section order and visual "
+        "structure: use heading blocks for section headings, paragraph blocks for each "
+        "separate paragraph, and bullet or numbered blocks for lists. Do not merge separate "
+        "paragraphs or list items into one paragraph. Keep every summary block aligned to "
+        "the corresponding translated block, with the same block type and order. Explain "
+        "medical terms in simple wording when possible, without changing their meaning. "
+        "Keep generic medicine names exactly as written in English in both languages. "
+        "Identify medical and medicine terms that appear in both summaries for the glossary; "
+        "include their exact English spelling. Preserve uncertainty, and do not invent facts, "
+        "diagnose, or recommend treatment. Omit personal identifiers and contact details "
+        "from the summary. If text is unreadable, say so. This is language assistance, not "
+        "medical advice. Return only JSON matching this shape: {"
+        '"source_text": string, '
+        '"summary_blocks": [{"type":"heading|paragraph|bullets|numbered", '
+        '"text":"...", "items":["..."]}], '
+        '"translation_blocks": [{"type":"heading|paragraph|bullets|numbered", '
+        '"text":"...", "items":["..."]}], '
+        '"glossary_terms": ["English medical or medicine term", ...]}. '
+        "For heading/paragraph blocks use text; for bullets/numbered blocks use items."
     )
     try:
         response = client.models.generate_content(
             model=MODEL_NAME,
             contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime_type), prompt],
-            config=types.GenerateContentConfig(response_mime_type="application/json", max_output_tokens=2048),
+            config=types.GenerateContentConfig(response_mime_type="application/json", max_output_tokens=4096),
         )
         data = json.loads(response.text or "")
-        result = {key: str(data.get(key, "")).strip() for key in ("source_text", "summary", "translation")}
-        if not all(result.values()):
+        summary_blocks = _normalize_blocks(data.get("summary_blocks"))
+        translation_blocks = _normalize_blocks(data.get("translation_blocks"))
+        if not summary_blocks or len(summary_blocks) != len(translation_blocks):
+            raise ValueError("The model returned unaligned report sections.")
+        if any(a["type"] != b["type"] for a, b in zip(summary_blocks, translation_blocks)):
+            raise ValueError("The model returned mismatched report formatting.")
+        raw_terms = data.get("glossary_terms", [])
+        if not isinstance(raw_terms, list):
+            raw_terms = []
+        glossary_terms = list(dict.fromkeys(
+            term.strip() for term in raw_terms
+            if isinstance(term, str) and term.strip() and len(term.strip()) <= 100
+        ))[:30]
+        result = {
+            "source_text": str(data.get("source_text", "")).strip(),
+            "summary": _blocks_to_text(summary_blocks),
+            "translation": _blocks_to_text(translation_blocks),
+            "summary_blocks": summary_blocks,
+            "translation_blocks": translation_blocks,
+            "glossary_terms": glossary_terms,
+        }
+        if not result["source_text"] or not result["summary"] or not result["translation"]:
             raise ValueError("The model returned an incomplete report.")
         return result
     except Exception as exc:
         raise ProcessingError("The document could not be processed. Please try again later.") from exc
     finally:
         client.close()
+
+
+def _normalize_blocks(raw_blocks):
+    if not isinstance(raw_blocks, list):
+        return []
+    blocks = []
+    valid_types = {"heading", "paragraph", "bullets", "numbered"}
+    for raw in raw_blocks[:80]:
+        if not isinstance(raw, dict) or raw.get("type") not in valid_types:
+            continue
+        block_type = raw["type"]
+        if block_type in {"bullets", "numbered"}:
+            items = raw.get("items")
+            if not isinstance(items, list):
+                continue
+            items = [str(item).strip() for item in items if str(item).strip()][:50]
+            if items:
+                blocks.append({"type": block_type, "items": items})
+        else:
+            text = str(raw.get("text", "")).strip()
+            if text:
+                blocks.append({"type": block_type, "text": text})
+    return blocks
+
+
+def _blocks_to_text(blocks):
+    rendered = []
+    for block in blocks:
+        if block["type"] in {"bullets", "numbered"}:
+            marker = "- " if block["type"] == "bullets" else "1. "
+            rendered.extend(marker + item for item in block["items"])
+        else:
+            rendered.append(block["text"])
+    return "\n\n".join(rendered)
 
 
 def _synthesize_speech(text, language_code):
