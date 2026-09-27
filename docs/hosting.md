@@ -85,7 +85,7 @@ The Static Site publishes the React website for people to use. In Render, choose
 | **Name** | `patientpal-frontend` (or another available name) |
 | **Branch** | `main` |
 | **Root Directory** | `frontend` |
-| **Build Command** | `npm ci && npm run build` |
+| **Build Command** | `npm run build` |
 | **Publish Directory** | `build` |
 
 Under **Environment Variables**, add this row:
@@ -97,6 +97,8 @@ Under **Environment Variables**, add this row:
 Keep the Gemini key on the Backend Web Service. Never add it to the Static Site.
 
 Create the Static Site and wait for it to say live. Its `onrender.com` address is the website address to share with users. Copy that exact address into `FRONTEND_ORIGIN` on the Backend Web Service, save, and redeploy the backend. If the website cannot reach the API, check that `REACT_APP_API_URL` ends in `/upload` and `FRONTEND_ORIGIN` exactly matches the Static Site address.
+
+If the build log says `npm: command not found` and shows an invisible character before `npm`, open the Static Site **Settings > Build & Deploy**, clear the **Build Command** field, and type `npm run build` directly into it. Confirm **Root Directory** is `frontend`. Render installs the packages before running the build command, so this command does not need to run `npm ci` again.
 
 If you already created a Static Site before the folder was renamed, open **Settings → Build & Deploy** and change **Root Directory** to `frontend`.
 

@@ -12,7 +12,7 @@ This React website is deployed separately from the FastAPI API. For the beginner
 ## Deploy as a Render Static Site
 
 - **Root Directory:** `frontend`
-- **Build Command:** `npm ci && npm run build`
+- **Build Command:** `npm run build`
 - **Publish Directory:** `build`
 - **Environment variable:** `REACT_APP_API_URL=https://YOUR-API.onrender.com/upload`
 
