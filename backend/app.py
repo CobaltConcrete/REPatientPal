@@ -1,4 +1,4 @@
-"""FastAPI endpoints for the PatientPal document processing service."""
+"""FastAPI endpoints for the NightingAIe document processing service."""
 
 import base64
 import logging
@@ -16,12 +16,15 @@ MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "8"))
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 allowed_frontend_origins = [
     origin.strip().rstrip("/")
-    for origin in os.getenv("FRONTEND_ORIGIN", "").split(",")
+    for origin in (
+        "https://nightingaie-frontend.onrender.com,"
+        + os.getenv("FRONTEND_ORIGIN", "")
+    ).split(",")
     if origin.strip()
 ]
 
 app = FastAPI(
-    title="PatientPal API",
+    title="NightingAIe API",
     description="Read and explain a health document image, translate it, and return speech audio.",
     version="1.0.0",
 )
@@ -40,7 +43,7 @@ async def http_error_response(_request: Request, exc: HTTPException):
 
 @app.get("/")
 def index():
-    return {"service": "PatientPal API", "health": "/health", "documentation": "/docs"}
+    return {"service": "NightingAIe API", "health": "/health", "documentation": "/docs"}
 
 
 @app.get("/health")

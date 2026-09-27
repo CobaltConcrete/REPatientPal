@@ -1,4 +1,4 @@
-# PatientPal website
+# NightingAIe website
 
 This React website is deployed separately from the FastAPI API. For the beginner-friendly Render steps, see [the hosting guide](../docs/hosting.md).
 

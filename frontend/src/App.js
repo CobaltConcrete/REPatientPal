@@ -29,7 +29,9 @@ function App() {
       if (!response.ok) throw new Error(data.error || 'Unable to process the image.');
       setResult(data);
     } catch (requestError) {
-      setError(requestError.message || 'Unable to reach PatientPal.');
+      setError(requestError instanceof TypeError
+        ? 'Could not connect to the NightingAIe service. Check that the API is running and REACT_APP_API_URL points to its /upload endpoint.'
+        : requestError.message || 'Unable to process this document. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -37,7 +39,7 @@ function App() {
 
   return (
     <main className="App">
-      <header className="brand"><span className="brand-mark" aria-hidden="true">✳</span> patientpal</header>
+      <header className="brand"><span className="brand-mark" aria-hidden="true">✳</span> NightingAIe</header>
       <section className="hero">
         <p className="eyebrow">YOUR REPORT, MADE CLEARER</p>
         <h1>Understand your<br /><span>health documents.</span></h1>
@@ -62,7 +64,7 @@ function App() {
         </form>
         <section className="panel output" aria-live="polite" aria-busy={loading}>
           <p className="eyebrow">02 · YOUR RESULTS</p>
-          <h2>{result ? 'Your report, made clearer' : 'A clearer picture'}</h2>
+          <h2>{result ? 'Your report, made clearer' : 'NightingAIe'}</h2>
           {loading && <p className="state">Reading your document…</p>}
           {error && <p className="error" role="alert">{error}</p>}
           {!loading && !error && !result && <p className="state">Your summary and translation will appear here.</p>}

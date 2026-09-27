@@ -1,4 +1,4 @@
-# Set up PatientPal
+# Set up NightingAIe
 
 This guide explains how to put the web version online with GitHub and Render. The project is split into three app folders:
 
@@ -18,7 +18,7 @@ If you use GitHub Desktop:
 
 1. Open GitHub Desktop and choose the `REPatientPal` project.
 2. Review the changed files. Do not commit `.env` files; they contain private settings. Files ending in `.env.example` are safe to commit because they contain placeholders.
-3. Enter a short note in the **Summary** box, such as `Prepare PatientPal for Render`.
+3. Enter a short note in the **Summary** box, such as `Prepare NightingAIe for Render`.
 4. Click **Commit to main**, then **Push origin**.
 
 If Render cannot find the private repository:
@@ -35,7 +35,7 @@ In Render, choose **New + → Web Service**, connect `CobaltConcrete/REPatientPa
 
 | Setting | Enter this |
 |---|---|
-| **Name** | `patientpal` (or another available name) |
+| **Name** | `nightingaie` (or another available name) |
 | **Branch** | `main` |
 | **Language / Runtime** | **Python 3** |
 | **Root Directory** | `backend` |
@@ -58,7 +58,7 @@ Add these settings under **Environment → Environment Variables**:
 | `MAX_UPLOAD_MB` | `8` |
 | `LOG_LEVEL` | `INFO` (optional) |
 
-After the Static Site is created, add one more variable here: `FRONTEND_ORIGIN` = the full Static Site address, such as `https://patientpal-frontend.onrender.com`. Leave off any path and trailing slash. Save and redeploy the Web Service after setting it.
+After the Static Site is created, add one more variable here: `FRONTEND_ORIGIN` = the full Static Site address, such as `https://nightingaie-frontend.onrender.com`. Leave off any path and trailing slash. Save and redeploy the Web Service after setting it.
 
 When Render says the service is live, open `https://YOUR-SERVICE.onrender.com/health`. The response should be `{"status":"ok"}`. The interactive API documentation is at `/docs`.
 
@@ -82,7 +82,7 @@ The Static Site publishes the React website for people to use. In Render, choose
 
 | Setting | Enter this |
 |---|---|
-| **Name** | `patientpal-frontend` (or another available name) |
+| **Name** | `nightingaie-frontend` (or another available name) |
 | **Branch** | `main` |
 | **Root Directory** | `frontend` |
 | **Build Command** | `npm run build` |

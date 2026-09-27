@@ -15,6 +15,9 @@ dist/
 uploads/*
 *.mp3
 
+# Local archive of removed legacy files; may contain an exposed credential
+.archives/
+
 # Local/editor files
 .idea/
 .vscode/

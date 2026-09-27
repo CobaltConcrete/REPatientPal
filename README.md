@@ -1,6 +1,6 @@
-# PatientPal
+# NightingAIe
 
-PatientPal is a small web prototype that reads a photo of a medical document, creates a plain-language summary, translates it, and generates speech. It is a language-accessibility demo, not a diagnostic or clinical tool.
+NightingAIe is a small web prototype that reads a photo of a medical document, creates a plain-language summary, translates it, and generates speech. It is a language-accessibility demo, not a diagnostic or clinical tool.
 
 ## Run locally
 
