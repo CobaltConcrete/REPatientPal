@@ -6,6 +6,8 @@ This guide is written for someone setting up a website for the first time. Follo
 
 > **Already created the Render Web Service?** This project now uses FastAPI with Uvicorn. In that service, open **Settings**, find **Build & Deploy**, and change **Start Command** to `uvicorn app:app --host 0.0.0.0 --port $PORT`. Save the change, then deploy the latest commit. Otherwise, Render will keep trying the old Gunicorn command.
 
+> **Already created the Static Site?** Its folder has been renamed to `frontend`. Open that Static Site's **Settings → Build & Deploy**, change **Root Directory** to `frontend`, and save so Render builds from the renamed folder.
+
 ## What you need
 
 - A GitHub account with access to `CobaltConcrete/REPatientPal`.
@@ -56,7 +58,7 @@ If these extra fields appear, leave them empty:
 - **Pre-Deploy Command**: leave blank. There is no database to prepare.
 - **Publish Directory**: leave blank. This is for a different kind of website.
 
-The Web Service runs the FastAPI API. The separate `image-to-audio` folder contains the React website; you will publish it as a Static Site in Step 7.
+The Web Service runs the FastAPI API. The separate `frontend` folder contains the React website; you will publish it as a Static Site in Step 7.
 
 ## 4. Add the new Gemini key
 
@@ -100,7 +102,7 @@ The Static Site is the page your visitors will open. It sends image uploads to t
 | On the form | Enter this | Why |
 |---|---|---|
 | **Name** | `patientpal-frontend` (or another available name) | This becomes part of the website address. |
-| **Root Directory** | `image-to-audio` | The React website files are in this folder. |
+| **Root Directory** | `frontend` | The React website files are in this folder. |
 | **Build Command** | `npm ci && npm run build` | Installs the website packages and prepares the finished website. |
 | **Publish Directory** | `build` | This is the folder made by the build command. |
 

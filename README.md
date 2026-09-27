@@ -33,7 +33,7 @@ Open <http://127.0.0.1:8000/docs> for interactive API documentation. The endpoin
 
 The same Gemini credential is used for image understanding, summarization, and translation. gTTS creates speech without a key. There is no speech-to-text feature or translation-provider key in this version.
 
-The optional Expo client in `PatientPal/` reads `EXPO_PUBLIC_API_URL` from `PatientPal/.env`; copy its example file and set the deployed server URL. It returns text results only. The Create React App client in `image-to-audio/` is the public website and can be deployed as a Render Static Site; set `REACT_APP_API_URL` to the deployed API endpoint ending in `/upload`. The API must allow the Static Site's address through `FRONTEND_ORIGIN`.
+The optional Expo mobile app in `PatientPal/` reads `EXPO_PUBLIC_API_URL` from `PatientPal/.env`; copy its example file and set the deployed server URL. It returns text results only. The Create React App website in `frontend/` can be deployed as a Render Static Site; set `REACT_APP_API_URL` to the deployed API endpoint ending in `/upload`. The API must allow the Static Site's address through `FRONTEND_ORIGIN`.
 
 ## Privacy and storage
 
