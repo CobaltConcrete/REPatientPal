@@ -1,0 +1,106 @@
+﻿# Put PatientPal online with Render
+
+This guide is written for someone setting up a website for the first time. Follow the steps in order. You will put the app on GitHub, ask Render to run it, then open the web address Render gives you.
+
+> **Before you start:** The old Gemini key was exposed in the repository. Revoke it and create a new one before publishing. This is a demo; do not upload real patient records.
+
+## What you need
+
+- A GitHub account with access to `CobaltConcrete/REPatientPal`.
+- A Render account.
+- A new Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+- The project saved on your computer, with its latest changes uploaded to GitHub.
+
+## 1. Upload your latest project to GitHub
+
+Render gets the app from GitHub. If you use GitHub Desktop:
+
+1. Open GitHub Desktop and select the `REPatientPal` project.
+2. Look through the list of changed files. Do not commit `.env`; it holds private settings for your computer.
+3. In the **Summary** box at the lower left, type `Prepare PatientPal for Render`.
+4. Click **Commit to main**.
+5. Click **Push origin** near the top. This uploads your changes to GitHub.
+
+If the latest project is already on GitHub, you can skip this step.
+
+## 2. Start creating the website on Render
+
+1. Go to [dashboard.render.com](https://dashboard.render.com/) and sign in.
+2. Click **New +** (or **New**) and select **Web Service**.
+3. If Render asks where your code is, choose **GitHub** and sign in to GitHub.
+4. If GitHub asks which repositories Render can access, choose **Only select repositories**, select `CobaltConcrete/REPatientPal`, then click **Save** or **Install & Authorize**. This gives Render access to that private repository. If you see an **All repositories** option instead, you can choose it, but that gives Render access to all your repositories.
+5. Return to Render. Find `CobaltConcrete/REPatientPal` in the repository list and click **Connect**. If it is missing, refresh the list. If it is still missing, open GitHub **Settings**, then **Applications**, then **Installed GitHub Apps**, choose **Render**, click **Configure**, and add `CobaltConcrete/REPatientPal` to the repository access list.
+
+Choose **Web Service**. You do not need to find or select **Blueprint**, **Static Site**, **Postgres**, or **Docker** for this setup.
+
+## 3. Fill in the setup form
+
+Enter these values. If a field listed here does not appear, leave it alone and continue.
+
+| On the form | Enter or choose | In plain language |
+|---|---|---|
+| **Name** | `patientpal` | The name of the service. If Render says it is taken, try `patientpal-` followed by a few numbers. |
+| **Region** | The nearest region available | Where Render runs the app. |
+| **Branch** | `main` | The GitHub version Render should use. |
+| **Language** | **Python 3** | The language the app runs on. |
+| **Root Directory** | Leave empty | The project files Render needs are already at the top of the repository. |
+| **Build Command** | `pip install -r requirements.txt` | Installs the parts the app needs to run. Copy exactly. |
+| **Start Command** | `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120` | Starts the app. Copy the whole line exactly. |
+| **Instance Type** or **Plan** | **Free** | Enough for a personal demo. It may take a short time to start after being idle. |
+
+If these extra fields appear, leave them empty:
+
+- **Dockerfile Path**: leave blank. This project does not use Docker.
+- **Pre-Deploy Command**: leave blank. There is no database to prepare.
+- **Publish Directory**: leave blank. This is for a different kind of website.
+
+There is no separate frontend command to enter. The main app serves the web page too. The `image-to-audio` folder is an optional development tool, not a second website to set up.
+
+## 4. Add the new Gemini key
+
+On the setup form, find **Environment Variables**. These are private settings that Render gives to the app when it runs. Add each row using **Add Environment Variable** or the equivalent button:
+
+| Name / Key | Value |
+|---|---|
+| `GEMINI_API_KEY` | Paste your **new** key from [Google AI Studio](https://aistudio.google.com/app/apikey). If there is a **Secret** switch, turn it on. |
+| `GEMINI_MODEL` | `gemini-3.8-flash` |
+| `MAX_UPLOAD_MB` | `8` |
+| `FLASK_DEBUG` | `false` |
+| `LOG_LEVEL` | `INFO` *(optional)* |
+
+Keep the key in Render's environment settings. Do not put it in GitHub, this guide, your source code, or `render.yaml`. On your own computer, the key belongs in the ignored `.env` file, written like `GEMINI_API_KEY=paste-your-new-key-here`.
+
+## 5. Create and open the website
+
+1. Review the settings and make sure the new Gemini key is entered.
+2. Click **Create Web Service** or **Deploy Web Service**.
+3. Render will show a page with activity and logs while it sets up the app. Wait until it says the service is live. The first setup can take several minutes.
+4. Click the web address ending in `onrender.com` near the top of the page. That is your website.
+
+Render has official instructions for [creating a Web Service](https://render.com/docs/your-first-deploy) and [running a Flask app](https://render.com/docs/deploy-flask).
+
+## 6. Make sure it works
+
+1. Open the `onrender.com` web address. You should see PatientPal's upload page.
+2. To check the app's status, add `/health` to the end of the address. For example: `https://patientpal.onrender.com/health`. You should see `{"status":"ok"}`. Your address may have a different name.
+3. Try the upload page with a sample image that has no real patient information.
+4. If the page does not work, open **Logs** on the Render service page. Check that the key was entered correctly and that the latest project was pushed to GitHub.
+
+## Do I need to set up a database?
+
+No. This version does not have accounts or saved history. It handles an upload, returns the result, and does not save the image, text, translation, or audio. You do not need Postgres, Supabase, or another database to put this version online.
+
+If you later add accounts or saved preferences, a database may be useful. Supabase Postgres is one option for ordinary account settings. Do not save identifiable medical documents in a free database or file bucket. Keeping health records requires careful privacy and security planning, including rules for who can access and delete them.
+
+## What happens when someone uses the demo?
+
+- The uploaded image is sent to **Google Gemini** to read, explain, and translate it.
+- The translated text is sent to **gTTS** to make spoken audio.
+- This app does not save the upload or the generated result.
+
+Tell people what happens to their upload before they use the app. This demo is not for diagnosis or treatment decisions.
+
+## What is running on Render?
+
+One Render Web Service runs the app, shows the web page, accepts uploads, asks Gemini to process them, and uses gTTS to create audio. The Render setup is also recorded in [`render.yaml`](../render.yaml); you do not need to open that file for the steps above.
+
